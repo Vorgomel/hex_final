@@ -28,20 +28,18 @@ position_values = {
 def generate_combinations(hex_key, pos_values):
     positions = sorted(pos_values.keys())
     values = [pos_values[pos] for pos in positions]
-    combos = product(*values)
-    for combo in combos:
-        new_key = list(hex_key)
-        for i, pos in enumerate(positions):
-            new_key[pos] = combo[i]
-        yield ''.join(new_key)
+    return product(*values)
 
 
 if __name__ == '__main__':
     print(f"Исходный HEX с неизвестными позициями: {HEX_key_FIND}")
-    combinations = list(generate_combinations(HEX_key_FIND, position_values))
-    print(f"Всего комбинаций для проверки: {len(combinations)}")
+    combinations = generate_combinations(HEX_key_FIND, position_values)
 
-    for test_key in tqdm(combinations):
+    for combo in tqdm(combinations):
+        new_key = list(HEX_key_FIND)
+        for i, pos in enumerate(sorted(position_values.keys())):
+            new_key[pos] = combo[i]
+        test_key = ''.join(new_key)
         try:
             dec = int(test_key[0:64], 16)
             uaddr = ice.privatekey_to_address(0, False, dec)
@@ -55,6 +53,8 @@ if __name__ == '__main__':
                     f.write(
                         f"DEC Key: {dec} \n HEX Key: {test_key} \nBTC Address Compressed: {caddr} \nWIF Compressed: {wifc}\nBTC Address Uncompressed: {uaddr} \nWIF Uncompressed: {wifu}\n")
                     f.write('===========================================================================\n')
-                break
+                break  # Выход из цикла после записи в файл
         except ValueError:
             continue  # Пропускаем невалидные значения HEX
+
+#версия без загрузки в ОЗУ
